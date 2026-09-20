@@ -457,7 +457,33 @@ $("reminderMsg").textContent=
 };
 
 
-$("save").onclick=()=>{
+$("reminder").onclick=async()=>{
+
+if(!("Notification" in window)){
+$("reminderMsg").style.display="block";
+$("reminderMsg").textContent="Benachrichtigungen werden auf diesem Gerät nicht unterstützt.";
+return;
+}
+
+const permission=await Notification.requestPermission();
+
+$("reminderMsg").style.display="block";
+
+if(permission==="granted"){
+
+new Notification("FitPlan 🔔",{
+body:"Dein Training ist für "+(data.time||"18:00")+" Uhr geplant."
+});
+
+$("reminderMsg").textContent="Benachrichtigungen sind aktiviert ✓";
+
+}else{
+
+$("reminderMsg").textContent="Benachrichtigungen wurden nicht erlaubt.";
+
+}
+
+};
 
 data.name=$("name").value.trim();
 data.place=$("place").value;
