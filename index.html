@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>FitPlan</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#f3f4f6;color:#111827}
+.app{max-width:520px;margin:auto;min-height:100vh;background:#fff}
+header{background:#111827;color:#fff;padding:22px 18px}
+header h1{margin:0;font-size:26px}header p{margin:4px 0 0;color:#cbd5e1}
+main{padding:16px 16px 88px}.screen{display:none}.screen.active{display:block}
+.card{border:1px solid #e5e7eb;border-radius:18px;padding:16px;margin-bottom:14px}
+.hero{background:#eef2ff;border:0}.muted{color:#6b7280;font-size:14px}
+.row{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.tag{background:#e5e7eb;border-radius:10px;padding:7px 9px;font-size:12px}
+button{min-height:44px;border:0;border-radius:12px;padding:10px 14px;background:#111827;color:#fff;font-weight:700;font-size:14px}
+button.secondary{background:#e5e7eb;color:#111827}button.full{width:100%}
+.exercise{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid #eee;gap:10px}
+.exercise:last-child{border-bottom:0}.check{width:30px;height:30px;border:2px solid #9ca3af;border-radius:50%;display:grid;place-items:center;flex:none}
+.check.done{background:#111827;border-color:#111827;color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#f9fafb;border-radius:14px;padding:14px}
+.stat b{font-size:23px}hr{border:0;border-top:1px solid #eee;margin:14px 0}
+label{display:block;font-size:14px;font-weight:700;margin:12px 0}input,select{display:block;width:100%;margin-top:6px;padding:12px;border:1px solid #d1d5db;border-radius:11px;font-size:16px}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);display:grid;grid-template-columns:repeat(5,1fr);background:#fff;border-top:1px solid #ddd;padding:6px;z-index:5}
+.nav button{background:transparent;color:#6b7280;font-size:11px;padding:6px;min-height:48px}.nav button.active{color:#111827;font-weight:800}
+.notice{padding:12px;border-radius:12px;background:#f9fafb;font-size:14px}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>FitPlan</h1><p>Dein persönlicher Trainings- & Ernährungsplan</p></header>
+<main>
+
+<section class="screen active" id="home">
+<div class="card hero">
+<div class="row"><div><div class="muted">HEUTE</div><h2>Oberkörper</h2><div class="muted">🏋️ Fitnessstudio · ca. 50 Min.</div></div><span class="tag">18:00</span></div>
+<br><button class="full" data-go="training">Training starten</button>
+</div>
+
+<div class="card">
+<h3>🔔 Heute ist Training</h3>
+<p>Deine geplante Einheit beginnt um <b>18:00 Uhr</b>.</p>
+<button class="secondary" id="reminderBtn">Erinnerung testen</button>
+<div id="reminderMsg" class="notice" style="display:none;margin-top:10px"></div>
+</div>
+
+<div class="card">
+<h3>🍎 Ernährung</h3>
+<p>Frühstück ✓ · Mittagessen · Abendessen</p>
+<button class="secondary" data-go="food">Tagesplan öffnen</button>
+</div>
+
+<div class="card">
+<h3>📈 Diese Woche</h3>
+<div class="grid">
+<div class="stat"><b id="homeWorkouts">3</b><br><span class="muted">Workouts</span></div>
+<div class="stat"><b>105</b><br><span class="muted">Minuten</span></div>
+</div>
+</div>
+</section>
+
+<section class="screen" id="training">
+<div class="card">
+<div class="muted">MONTAG · OBERKÖRPER</div>
+<h2>🏋️ Fitnessstudio</h2>
+<p class="muted">Kontrolliert trainieren und bei Schmerzen abbrechen.</p>
+</div>
+
+<div class="card" id="exercises"></div>
+<button class="full" id="finish">Training abschließen</button>
+</section>
+
+<section class="screen" id="food">
+<div class="card">
+<h2>🍎 Tagesplan</h2>
+<p><b>Frühstück</b><br>Haferflocken, Joghurt und Obst</p>
+<hr>
+<p><b>Mittagessen</b><br>Vollkornnudeln, Gemüse und eine Proteinquelle</p>
+<hr>
+<p><b>Snack</b><br>Obst und Joghurt oder Nüsse</p>
+<hr>
+<p><b>Abendessen</b><br>Vollkornbrot, Ei und Gemüse</p>
+</div>
+
+<div class="card">
+<h3>🛒 Einkaufsliste</h3>
+<p>☐ Haferflocken<br>☐ Joghurt<br>☐ Obst<br>☐ Gemüse<br>☐ Vollkornnudeln<br>☐ Vollkornbrot<br>☐ Eier</p>
+</div>
+</section>
+
+<section class="screen" id="progress">
+<div class="card">
+<h2>📈 Fortschritt</h2>
+<div class="grid">
+<div class="stat"><b id="progressWorkouts">3</b><br><span class="muted">Workouts</span></div>
+<div class="stat"><b id="progressMinutes">105</b><br><span class="muted">Minuten</span></div>
+</div>
+</div>
+
+<div class="card">
+<h3>🏆 Woche</h3>
+<p>Mo ✓ &nbsp; Di – &nbsp; Mi ✓ &nbsp; Do – &nbsp; Fr ✓</p>
+</div>
+</section>
+
+<section class="screen" id="profile">
+<div class="card">
+<h2>👤 Profil</h2>
+
+<label>Trainingsort
+<select>
+<option>Fitnessstudio</option>
+<option>Zuhause</option>
+<option>Beides</option>
+</select>
+</label>
+
+<label>Trainingstage
+<select>
+<option>2 Tage</option>
+<option selected>3 Tage</option>
+<option>4 Tage</option>
+<option>5 Tage</option>
+</select>
+</label>
+
+<label>Trainingszeit
+<input type="time" value="18:00">
+</label>
+
+<label>Ernährung
+<select>
+<option>Gemischt</option>
+<option>Vegetarisch</option>
+<option>Vegan</option>
+</select>
+</label>
+
+<button class="full" id="save">Profil speichern</button>
+</div>
+
+<div class="card">
+<h3>🔔 Erinnerungen</h3>
+<p class="muted">In dieser Demo können Erinnerungen innerhalb der App getestet werden. Echte Push-Mitteilungen brauchen später eine installierbare App bzw. einen entsprechenden Web-Push-Dienst.</p>
+</div>
+</section>
+
+</main>
+
+<nav class="nav">
+<button class="active" data-nav="home">🏠<br>Heute</button>
+<button data-nav="training">🏋️<br>Training</button>
+<button data-nav="food">🍎<br>Essen</button>
+<button data-nav="progress">📈<br>Fortschritt</button>
+<button data-nav="profile">👤<br>Profil</button>
+</nav>
+
+</div>
+
+<script>
+const exercises=[
+["Bankdrücken","3 Sätze · 8–12 Wdh."],
+["Latzug","3 Sätze · 8–12 Wdh."],
+["Rudermaschine","3 Sätze · 8–12 Wdh."],
+["Schulterdrücken","2 Sätze · 8–12 Wdh."],
+["Bizeps-Curls","2 Sätze · 10–15 Wdh."],
+["Trizeps am Kabelzug","2 Sätze · 10–15 Wdh."]
+];
+
+const exerciseBox=document.getElementById("exercises");
+
+exercises.forEach(([name,info])=>{
+ const row=document.createElement("div");
+ row.className="exercise";
+ row.innerHTML='<div><b>'+name+'</b><div class="muted">'+info+'</div></div><button class="check" type="button" aria-label="'+name+' erledigt">✓</button>';
+ row.querySelector("button").addEventListener("click",e=>e.currentTarget.classList.toggle("done"));
+ exerciseBox.appendChild(row);
+});
+
+function openScreen(id){
+ document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.nav===id));
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>openScreen(b.dataset.go)));
+document.querySelectorAll("[data-nav]").forEach(b=>b.addEventListener("click",()=>openScreen(b.dataset.nav)));
+
+let workouts=3;
+
+document.getElementById("finish").addEventListener("click",()=>{
+ workouts++;
+ document.getElementById("homeWorkouts").textContent=workouts;
+ document.getElementById("progressWorkouts").textContent=workouts;
+ document.getElementById("progressMinutes").textContent=105+(workouts-3)*50;
+ openScreen("progress");
+});
+
+document.getElementById("reminderBtn").addEventListener("click",()=>{
+ const m=document.getElementById("reminderMsg");
+ m.style.display="block";
+ m.textContent="🔔 FitPlan: Heute um 18:00 Uhr steht dein Training an.";
+});
+
+document.getElementById("save").addEventListener("click",()=>alert("Profil gespeichert!"));
+</script>
+
+</body>
+</html>
