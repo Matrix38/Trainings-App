@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>FitPlan</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f3f4f6;color:#111827;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.app{max-width:560px;margin:auto;min-height:100vh;background:#fff}
+header{background:linear-gradient(135deg,#111827,#3730a3);color:white;padding:24px 18px}
+header h1{margin:0;font-size:28px}
+header p{margin:5px 0 0;color:#dbeafe}
+main{padding:15px 15px 90px}
+.screen{display:none}.screen.active{display:block}
+.card{background:white;border:1px solid #e5e7eb;border-radius:20px;padding:16px;margin-bottom:14px;box-shadow:0 3px 12px #0000000b}
+.hero{background:#eef2ff;border:0}
+.muted{color:#6b7280;font-size:14px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tag{background:#e0e7ff;color:#3730a3;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:800}
+button{min-height:44px;border:0;border-radius:13px;padding:10px 14px;background:#111827;color:white;font-weight:800;font-size:14px}
+button.secondary{background:#e5e7eb;color:#111827}
+button.accent{background:#4f46e5}
+button.full{width:100%}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#f9fafb;border-radius:15px;padding:14px}
+.stat b{font-size:24px}
+.progress{height:10px;background:#e5e7eb;border-radius:20px;overflow:hidden}
+.progress div{height:100%;width:0;background:#4f46e5;transition:.3s}
+.exercise{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #eee}
+.exercise:last-child{border:0}
+.check{width:38px;height:38px;border-radius:50%;padding:0;background:white;color:transparent;border:2px solid #9ca3af}
+.check.done{background:#111827;color:white;border-color:#111827}
+.list{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #eee}
+.list:last-child{border:0}
+label{display:block;font-size:14px;font-weight:800;margin:13px 0}
+input,select{display:block;width:100%;margin-top:6px;padding:12px;border:1px solid #d1d5db;border-radius:12px;font-size:16px}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(560px,100%);display:grid;grid-template-columns:repeat(5,1fr);background:white;border-top:1px solid #ddd;padding:6px;z-index:5}
+.nav button{background:transparent;color:#6b7280;font-size:10px;padding:5px;min-height:50px}
+.nav button.active{color:#4f46e5}
+.notice{background:#ecfdf5;color:#065f46;padding:12px;border-radius:12px;margin-top:10px}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header>
+<h1>FitPlan</h1>
+<p id="greeting">Dein persönlicher Trainingsplan</p>
+</header>
+
+<main>
+
+<section class="screen active" id="home">
+
+<div class="card hero">
+<div class="row">
+<div>
+<div class="muted">NÄCHSTE EINHEIT</div>
+<h2>Oberkörper</h2>
+<div class="muted">🏋️ Fitnessstudio · ca. 50 Min.</div>
+</div>
+<span class="tag" id="homeTime">18:00</span>
+</div>
+<br>
+<button class="accent full" data-go="training">Training starten</button>
+</div>
+
+<div class="card">
+<h3>📊 Dein Fortschritt</h3>
+<div class="grid">
+<div class="stat"><b id="workouts">0</b><br><span class="muted">Workouts</span></div>
+<div class="stat"><b id="minutes">0</b><br><span class="muted">Minuten</span></div>
+</div>
+<br>
+<div class="progress"><div id="weekProgress"></div></div>
+<p class="muted" id="weekText">0 von 3 Einheiten</p>
+</div>
+
+<div class="card">
+<h3>🔔 Erinnerung</h3>
+<p id="reminderText">Training heute um 18:00 Uhr.</p>
+<button class="secondary" id="reminder">Erinnerung testen</button>
+<div id="reminderMsg" class="notice" style="display:none"></div>
+</div>
+
+<div class="card">
+<h3>🥗 Ernährung</h3>
+<p class="muted">Dein Tagesplan für ausgewogene Mahlzeiten.</p>
+<button class="secondary" data-go="food">Tagesplan öffnen</button>
+</div>
+
+</section>
+
+
+<section class="screen" id="training">
+
+<div class="card">
+<div class="muted">HEUTE · OBERKÖRPER</div>
+<h2>🏋️ Training</h2>
+<p class="muted">Kontrolliert trainieren und bei Schmerzen abbrechen.</p>
+<div class="progress"><div id="trainingProgress"></div></div>
+<p class="muted" id="trainingText">0 von 6 Übungen</p>
+</div>
+
+<div class="card" id="exerciseList"></div>
+
+<button class="accent full" id="finish">Training abschließen</button>
+
+</section>
+
+
+<section class="screen" id="food">
+
+<div class="card">
+<h2>🥗 Tagesplan</h2>
+
+<div class="list">
+<div><b>Frühstück</b><div class="muted">Haferflocken, Joghurt und Obst</div></div>
+<span>🌅</span>
+</div>
+
+<div class="list">
+<div><b>Mittagessen</b><div class="muted">Vollkornnudeln, Gemüse und Proteinquelle</div></div>
+<span>☀️</span>
+</div>
+
+<div class="list">
+<div><b>Snack</b><div class="muted">Obst und Joghurt oder Nüsse</div></div>
+<span>🍎</span>
+</div>
+
+<div class="list">
+<div><b>Abendessen</b><div class="muted">Vollkornbrot, Ei und Gemüse</div></div>
+<span>🌙</span>
+</div>
+
+</div>
+
+<div class="card">
+<h3>🛒 Einkaufsliste</h3>
+<p>☐ Haferflocken<br>
+☐ Joghurt<br>
+☐ Obst<br>
+☐ Gemüse<br>
+☐ Vollkornnudeln<br>
+☐ Vollkornbrot<br>
+☐ Eier<br>
+☐ Nüsse</p>
+</div>
+
+</section>
+
+
+<section class="screen" id="progress">
+
+<div class="card">
+<h2>📈 Fortschritt</h2>
+
+<div class="grid">
+<div class="stat">
+<b id="pWorkouts">0</b><br>
+<span class="muted">Workouts</span>
+</div>
+
+<div class="stat">
+<b id="pMinutes">0</b><br>
+<span class="muted">Minuten</span>
+</div>
+</div>
+
+</div>
+
+<div class="card">
+<h3>🏆 Diese Woche</h3>
+<p id="weekDays">Noch keine Trainings abgeschlossen.</p>
+</div>
+
+<div class="card">
+<h3>📋 Trainingshistorie</h3>
+<div id="history">Noch keine abgeschlossenen Trainings.</div>
+</div>
+
+</section>
+
+
+<section class="screen" id="profile">
+
+<div class="card">
+
+<h2>👤 Profil</h2>
+
+<label>
+Name
+<input id="name" type="text" placeholder="Dein Name">
+</label>
+
+<label>
+Trainingsort
+<select id="place">
+<option>Fitnessstudio</option>
+<option>Zuhause</option>
+<option>Beides</option>
+</select>
+</label>
+
+<label>
+Trainingstage
+<select id="days">
+<option value="2">2 Tage</option>
+<option value="3" selected>3 Tage</option>
+<option value="4">4 Tage</option>
+<option value="5">5 Tage</option>
+</select>
+</label>
+
+<label>
+Trainingszeit
+<input id="time" type="time" value="18:00">
+</label>
+
+<button class="accent full" id="save">Profil speichern</button>
+
+<div id="saved" class="notice" style="display:none">
+Profil gespeichert ✓
+</div>
+
+</div>
+
+<div class="card">
+<h3>📱 FitPlan auf dem Home-Bildschirm</h3>
+<p class="muted">
+In Safari auf „Teilen“ → „Zum Home-Bildschirm“ → „Hinzufügen“.
+</p>
+</div>
+
+<div class="card">
+<h3>⚙️ Daten</h3>
+<p class="muted">Dein Fortschritt wird auf diesem Gerät gespeichert.</p>
+<button class="secondary full" id="reset">Daten zurücksetzen</button>
+</div>
+
+</section>
+
+</main>
+
+
+<nav class="nav">
+
+<button class="active" data-nav="home">
+🏠<br>Heute
+</button>
+
+<button data-nav="training">
+🏋️<br>Training
+</button>
+
+<button data-nav="food">
+🥗<br>Essen
+</button>
+
+<button data-nav="progress">
+📈<br>Fortschritt
+</button>
+
+<button data-nav="profile">
+👤<br>Profil
+</button>
+
+</nav>
+
+</div>
+
+
+<script>
+
+const exercises=[
+["Bankdrücken","3 Sätze · 8–12 Wdh."],
+["Latzug","3 Sätze · 8–12 Wdh."],
+["Rudermaschine","3 Sätze · 8–12 Wdh."],
+["Schulterdrücken","2 Sätze · 8–12 Wdh."],
+["Bizeps-Curls","2 Sätze · 10–15 Wdh."],
+["Trizeps am Kabelzug","2 Sätze · 10–15 Wdh."]
+];
+
+let data=JSON.parse(localStorage.getItem("fitplanData")||"null")||{
+workouts:0,
+minutes:0,
+history:[],
+name:"",
+place:"Fitnessstudio",
+days:3,
+time:"18:00"
+};
+
+const $=id=>document.getElementById(id);
+
+function saveData(){
+localStorage.setItem("fitplanData",JSON.stringify(data));
+}
+
+function openScreen(id){
+
+document.querySelectorAll(".screen").forEach(s=>{
+s.classList.toggle("active",s.id===id);
+});
+
+document.querySelectorAll(".nav button").forEach(b=>{
+b.classList.toggle("active",b.dataset.nav===id);
+});
+
+window.scrollTo(0,0);
+
+if(id==="progress")renderProgress();
+
+}
+
+document.querySelectorAll("[data-go]").forEach(b=>{
+b.onclick=()=>openScreen(b.dataset.go);
+});
+
+document.querySelectorAll("[data-nav]").forEach(b=>{
+b.onclick=()=>openScreen(b.dataset.nav);
+});
+
+
+const box=$("exerciseList");
+
+exercises.forEach(([name,info])=>{
+
+const row=document.createElement("div");
+
+row.className="exercise";
+
+row.innerHTML=
+"<div><b>"+name+"</b><div class='muted'>"+info+
+"</div></div><button class='check'>✓</button>";
+
+row.querySelector(".check").onclick=e=>{
+e.currentTarget.classList.toggle("done");
+updateTraining();
+};
+
+box.appendChild(row);
+
+});
+
+
+function updateTraining(){
+
+const done=document.querySelectorAll(".check.done").length;
+
+$("trainingText").textContent=done+" von 6 Übungen";
+
+$("trainingProgress").style.width=(done/6*100)+"%";
+
+}
+
+
+function updateHome(){
+
+$("workouts").textContent=data.workouts;
+$("minutes").textContent=data.minutes;
+
+const planned=Number(data.days)||3;
+
+$("weekProgress").style.width=
+Math.min(100,data.workouts/planned*100)+"%";
+
+$("weekText").textContent=
+Math.min(data.workouts,planned)+" von "+planned+" Einheiten";
+
+$("homeTime").textContent=data.time||"18:00";
+
+$("reminderText").textContent=
+"Training heute um "+(data.time||"18:00")+" Uhr.";
+
+if(data.name){
+
+$("greeting").textContent=
+"Hallo "+data.name+"! Bereit für dein Training?";
+
+}
+
+}
+
+
+function renderProgress(){
+
+$("pWorkouts").textContent=data.workouts;
+$("pMinutes").textContent=data.minutes;
+
+if(data.history.length===0){
+
+$("history").textContent=
+"Noch keine abgeschlossenen Trainings.";
+
+}else{
+
+$("history").innerHTML=data.history
+.slice()
+.reverse()
+.map(x=>
+"<div class='list'><b>"+x.date+
+"</b><span>"+x.minutes+" Min.</span></div>"
+)
+.join("");
+
+}
+
+$("weekDays").textContent=
+data.workouts+" Training"+(data.workouts===1?"":"s")+" diese Woche.";
+
+}
+
+
+$("finish").onclick=()=>{
+
+const done=document.querySelectorAll(".check.done").length;
+
+if(done<6){
+
+alert("Bitte erledige zuerst alle Übungen.");
+
+return;
+
+}
+
+data.workouts++;
+data.minutes+=50;
+
+data.history.push({
+date:new Date().toLocaleDateString("de-DE"),
+minutes:50
+});
+
+saveData();
+updateHome();
+renderProgress();
+
+openScreen("progress");
+
+};
+
+
+$("reminder").onclick=()=>{
+
+$("reminderMsg").style.display="block";
+
+$("reminderMsg").textContent=
+"🔔 FitPlan: Dein Training ist für "+
+(data.time||"18:00")+" Uhr geplant.";
+
+};
+
+
+$("save").onclick=()=>{
+
+data.name=$("name").value.trim();
+data.place=$("place").value;
+data.days=Number($("days").value);
+data.time=$("time").value||"18:00";
+
+saveData();
+updateHome();
+
+$("saved").style.display="block";
+
+setTimeout(()=>{
+$("saved").style.display="none";
+},2000);
+
+};
+
+
+$("reset").onclick=()=>{
+
+if(confirm("Alle gespeicherten FitPlan-Daten löschen?")){
+
+localStorage.removeItem("fitplanData");
+
+location.reload();
+
+}
+
+};
+
+
+$("name").value=data.name||"";
+$("place").value=data.place||"Fitnessstudio";
+$("days").value=data.days||3;
+$("time").value=data.time||"18:00";
+
+updateHome();
+updateTraining();
+renderProgress();
+
+</script>
+
+</body>
+</html>
