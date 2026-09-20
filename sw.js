@@ -42,8 +42,9 @@ self.addEventListener("push", event => {
       data.title || "FitPlan 🔔",
       {
         body: data.body || "Zeit für dein Training!",
-        icon: "./icon-192.png",
-        badge: "./icon-192.png"
+        icon: "./manifest.json",
+badge: "./manifest.json"
+        
       }
     )
   );
