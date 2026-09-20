@@ -446,7 +446,55 @@ openScreen("progress");
 };
 
 
-$("reminder").onclick=()=>{
+$("reminder").onclick=async()=>{
+
+if(!("Notification" in window)){
+  $("reminderMsg").style.display="block";
+  $("reminderMsg").textContent=
+    "Benachrichtigungen werden nicht unterstützt.";
+  return;
+}
+
+if(!("serviceWorker" in navigator)){
+  $("reminderMsg").style.display="block";
+  $("reminderMsg").textContent=
+    "Service Worker wird nicht unterstützt.";
+  return;
+}
+
+try{
+
+  const permission=await Notification.requestPermission();
+
+  $("reminderMsg").style.display="block";
+
+  if(permission==="granted"){
+
+    const registration=
+      await navigator.serviceWorker.ready;
+
+    $("reminderMsg").textContent=
+      "🔔 Benachrichtigungen sind aktiviert ✓";
+
+    console.log("Push-Berechtigung erteilt",registration);
+
+  }else{
+
+    $("reminderMsg").textContent=
+      "Benachrichtigungen wurden nicht erlaubt.";
+
+  }
+
+}catch(error){
+
+  $("reminderMsg").textContent=
+    "Fehler beim Aktivieren der Benachrichtigungen.";
+
+  console.error(error);
+
+}
+
+};
 
 $("reminderMsg").style.display="block";
 
